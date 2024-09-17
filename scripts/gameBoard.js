@@ -1,9 +1,12 @@
 import character from './character.js';
+import checkGameOver from './checkGameOver.js';
 import { cssLoader } from './cssLoader.js';
+import score from './score.js';
 
 const gameBoard = (() => {
 
-  //Create a grid square element for an answer object
+  // Create a grid square element for an answer object
+
   const gridSquare = (answer) => {
     let squareEl = document.createElement('div');
     squareEl.classList.add('grid-square');
@@ -30,13 +33,30 @@ const gameBoard = (() => {
       rule = 'Prime numbers';
     }
 
-    const header = document.createElement('div');
-    header.id = 'gameboard-header';
+    // creates rule to be followed in game
+    
+    const gameboardHeader = document.createElement('div');
+    gameboardHeader.id = 'gameboard-header';
     const titleCard = document.createElement('h2');
     titleCard.id = 'title-card';
     titleCard.innerText = rule;
-    document.body.appendChild(header);
-    header.appendChild(titleCard);
+    document.body.appendChild(gameboardHeader);
+    gameboardHeader.appendChild(titleCard);
+    document.body.appendChild(gameboardHeader);
+
+    // displays current score
+
+    const scoreHeader =  document.createElement('div');
+    scoreHeader.id = 'score-header';
+    gameboardHeader.appendChild(scoreHeader);
+    score.changeScore(0);
+
+    // displays remaining lives out of 3
+
+    const livesHeader =  document.createElement('div');
+    livesHeader.id = 'lives-header';
+    gameboardHeader.appendChild(livesHeader);
+    checkGameOver.displayLives(0);
 
     let board = document.createElement('div');
     board.classList.add('game-board');
@@ -52,7 +72,8 @@ const gameBoard = (() => {
       board.appendChild(square);
     });
 
-    //Append the character to the board
+    // Append the character to the board
+    
     board.appendChild(character.createMuncher(answerObj));
     board.appendChild(character.createEnemy());
 

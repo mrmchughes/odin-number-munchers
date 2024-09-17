@@ -1,3 +1,4 @@
+
 const highScore = (() => {
 
   // if user is new on this device, create local storage on this device
@@ -56,7 +57,7 @@ const highScore = (() => {
         retrieveStorage(highScores);
       }
     } else {
-      alert('List can not be saved to device.');
+      console.log('High scores can not be saved to device.');
     }
   }
 

@@ -5,8 +5,13 @@ const character = (() => {
 
   // Randomly spawn on an interior square of the board
 
-  const spawn = () => {
-    let spawnSquares = [7, 8, 9, 10, 13, 16, 19, 20, 21, 22];
+  const spawn = (avatar) => {
+    let spawnSquares;
+    if (avatar === 'player') {
+      spawnSquares = [7, 9, 13, 19, 21];
+    } else if (avatar === 'enemy') {
+      spawnSquares = [8, 10, 16, 20, 22];
+    }
     let spawnIndex = Math.floor(Math.random() * spawnSquares.length - 1) + 1;
     let spawnSquare = spawnSquares[spawnIndex];
     return spawnSquare;
@@ -16,16 +21,20 @@ const character = (() => {
 
   const createAvatar = (userName, marker, position) => 
     ({ userName, marker, position });
-  let enemyPosition = spawn();
-  let playerPosition = spawn();
+  let enemyPosition = spawn('enemy');
+  let playerPosition = spawn('player');
+
+  const playerAvatar = document.getElementById('muncherAvatar').getAttribute('src');
+  const enemyAvatar = document.getElementById('bomb').getAttribute('src');
+
   const enemy = createAvatar(
     'Enemy', 
-    "url('../images/enemy.gif')", 
+    `url(${enemyAvatar})`, 
     enemyPosition
   );
   const player = createAvatar(
     'Player', 
-    "url('../images/goldenmuncher_100.gif')", 
+    `url(${playerAvatar})`, 
     playerPosition
   );
   
@@ -39,6 +48,7 @@ const character = (() => {
     muncher.style.left = (character.position % 6) * 100 + 'px';
     muncher.style.top = Math.floor(character.position / 6) * 100 + 'px';
     muncher.style.backgroundImage = character.marker;
+    console.log(muncher.style);
     return muncher;
   };
 
@@ -49,7 +59,6 @@ const character = (() => {
   const createMuncher = (answerObj) => {
     answerObject = answerObj;
     let character = player;
-    console.log(character);
     const playerAvatar = placeAvatar(character);
     return playerAvatar;
   }
@@ -63,7 +72,7 @@ const character = (() => {
   }
 
   // moves selected character in designated direction
-
+  
   function moveRight(character) {
     let user = document.querySelector(`.${character.userName}`);
     if (parseInt(user.style.left) < 500) {
@@ -99,32 +108,43 @@ const character = (() => {
   // player avatar movement directs to moveCharacter module 
   // which determines if answer selection is correct
 
+  const movementSound = document.getElementById('movement');
+
+  // when player moves change color of the square and make movement sound
+
+  const movement = (characterPosition, answerObject) => {
+    moveCharacter.moveResponse(characterPosition, answerObject);
+    movementSound.play();
+  }
+
   const moveUser = (key, character) => {
-    console.log(typeof character);
     switch (key) {
       case 'ArrowRight':
         moveRight(character);
-        (character.userName === 'Player') ? moveCharacter.moveResponse(character.position, answerObject): null;
+        (character.userName === 'Player') ? movement(character.position, answerObject): null;
         return character.position;
       case 'ArrowLeft': 
         moveLeft(character);
-        (character.userName === 'Player') ? moveCharacter.moveResponse(character.position, answerObject): null;
+        (character.userName === 'Player') ? movement(character.position, answerObject): null;
         return character.position;
       case 'ArrowUp': 
         moveUp(character);
-        (character.userName === 'Player') ? moveCharacter.moveResponse(character.position, answerObject): null;
+        (character.userName === 'Player') ? movement(character.position, answerObject): null;
         return character.position;
       case 'ArrowDown':
         moveDown(character);
-        (character.userName === 'Player') ? moveCharacter.moveResponse(character.position, answerObject): null;
+        (character.userName === 'Player') ? movement(character.position, answerObject): null;
         return character.position;
     }
   };
 
   // ends game when enemy attack is successful
 
+  const enemySound = document.getElementById('enemyHit');
+
   const enemyAttack = (enemyPosition, playerPosition) => {
     if (enemyPosition === playerPosition) {
+      enemySound.play();
       gameOver.endScreen();
     }
   }
@@ -177,10 +197,12 @@ const character = (() => {
     }
   };
 
-  // moves enemy every 3 seconds
+  // moves enemy at a speed determined by the difficulty level
+
+  let move;
 
   function displayEnemy(speed) {
-    setInterval(function() {
+    move = setInterval(function() {
       let key = '';
       let user = enemy;
       key = moveEnemy();
@@ -190,7 +212,13 @@ const character = (() => {
     }, speed);
   }
 
-  return { createMuncher, createEnemy, answerObject, displayEnemy };
+  // stops enemy from moving at end of game
+
+  function unmountEnemy () {
+    clearInterval(move);
+  }
+
+  return { createMuncher, createEnemy, answerObject, displayEnemy, unmountEnemy };
 })();
 
 export default character;
